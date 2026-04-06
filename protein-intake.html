@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Protein Intake Calculator — Daily Protein Goal</title>
+  <meta name="description" content="Calculate your daily protein intake target based on your bodyweight and fitness goal — fat loss, muscle gain, or maintenance." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>💪 Protein Intake Calculator</h1>
+    <p>Find your daily protein goal based on your weight and goal</p>
+    <a class="home-link" href="index.html">← All Calculators</a>
+  </header>
+
+  <main>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+    <div class="card">
+      <div class="form-group">
+        <label>Unit System</label>
+        <div class="radio-group">
+          <label><input type="radio" name="units" value="lbs" checked /> Imperial (lbs)</label>
+          <label><input type="radio" name="units" value="kg" /> Metric (kg)</label>
+        </div>
+      </div>
+
+      <div class="form-group" id="lbs-field">
+        <label for="weight-lbs">Bodyweight (lbs)</label>
+        <input type="number" id="weight-lbs" placeholder="e.g. 165" min="44" max="880" />
+      </div>
+
+      <div class="form-group" id="kg-field" style="display:none;">
+        <label for="weight-kg">Bodyweight (kg)</label>
+        <input type="number" id="weight-kg" placeholder="e.g. 75" min="20" max="400" />
+      </div>
+
+      <div class="form-group">
+        <label for="goal">Fitness Goal</label>
+        <select id="goal">
+          <option value="fatloss">Fat Loss (1.0–1.2 g/lb)</option>
+          <option value="maintenance" selected>Maintenance (0.7–1.0 g/lb)</option>
+          <option value="musclegain">Muscle Gain (1.2–1.6 g/lb)</option>
+        </select>
+      </div>
+
+      <button class="calc-btn" onclick="calculate()">Calculate Protein</button>
+
+      <div class="result" id="result">
+        <h2>Your Daily Protein Target</h2>
+        <div class="big-number" id="protein-out">—</div>
+        <div class="sub" id="range-label">grams per day</div>
+
+        <div class="result-grid" style="margin-top:1.2rem;">
+          <div class="result-item">
+            <div class="label">Minimum</div>
+            <div class="value" id="min-out">—</div>
+            <div class="label">g/day</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Recommended</div>
+            <div class="value" id="mid-out">—</div>
+            <div class="label">g/day</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Maximum</div>
+            <div class="value" id="max-out">—</div>
+            <div class="label">g/day</div>
+          </div>
+        </div>
+
+        <p class="sub" style="margin-top:1rem;">Per meal (÷3): approximately <strong id="per-meal">—</strong>g protein</p>
+      </div>
+    </div>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+  </main>
+
+  <footer>
+    <p>Ranges based on established sports nutrition guidelines. For informational purposes only.</p>
+    <p style="margin-top:0.4rem;">© 2026 Fitness Calculators · <a href="index.html">Home</a></p>
+  </footer>
+
+  <script>
+    document.querySelectorAll('input[name="units"]').forEach(r => {
+      r.addEventListener('change', () => {
+        const isLbs = r.value === 'lbs';
+        document.getElementById('lbs-field').style.display = isLbs ? '' : 'none';
+        document.getElementById('kg-field').style.display  = isLbs ? 'none' : '';
+      });
+    });
+
+    const goals = {
+      fatloss:     { min: 1.0, max: 1.2, label: 'Fat Loss: 1.0–1.2 g per lb of bodyweight' },
+      maintenance: { min: 0.7, max: 1.0, label: 'Maintenance: 0.7–1.0 g per lb of bodyweight' },
+      musclegain:  { min: 1.2, max: 1.6, label: 'Muscle Gain: 1.2–1.6 g per lb of bodyweight' }
+    };
+
+    function calculate() {
+      const units = document.querySelector('input[name="units"]:checked').value;
+      let lbs;
+      if (units === 'lbs') {
+        lbs = parseFloat(document.getElementById('weight-lbs').value);
+      } else {
+        const kg = parseFloat(document.getElementById('weight-kg').value);
+        lbs = kg * 2.20462;
+      }
+
+      const goalKey = document.getElementById('goal').value;
+
+      if (!lbs || lbs <= 0) {
+        alert('Please enter a valid bodyweight.');
+        return;
+      }
+
+      const g = goals[goalKey];
+      const minG = Math.round(lbs * g.min);
+      const maxG = Math.round(lbs * g.max);
+      const midG = Math.round((minG + maxG) / 2);
+
+      document.getElementById('protein-out').textContent = midG + 'g';
+      document.getElementById('range-label').textContent = 'grams per day (' + minG + '–' + maxG + 'g range)';
+      document.getElementById('min-out').textContent = minG;
+      document.getElementById('mid-out').textContent = midG;
+      document.getElementById('max-out').textContent = maxG;
+      document.getElementById('per-meal').textContent = Math.round(midG / 3);
+      document.getElementById('result').classList.add('show');
+    }
+  </script>
+
+</body>
+</html>

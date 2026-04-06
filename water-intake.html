@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Water Intake Calculator — Daily Hydration Target</title>
+  <meta name="description" content="Calculate your daily water intake target based on your weight, activity level, and climate." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>💧 Water Intake Calculator</h1>
+    <p>Find your daily hydration target for your body and lifestyle</p>
+    <a class="home-link" href="index.html">← All Calculators</a>
+  </header>
+
+  <main>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+    <div class="card">
+      <div class="form-group">
+        <label>Unit System</label>
+        <div class="radio-group">
+          <label><input type="radio" name="units" value="kg" checked /> Metric (kg)</label>
+          <label><input type="radio" name="units" value="lbs" /> Imperial (lbs)</label>
+        </div>
+      </div>
+
+      <div class="form-group" id="kg-field">
+        <label for="weight-kg">Weight (kg)</label>
+        <input type="number" id="weight-kg" placeholder="e.g. 75" min="20" max="400" />
+      </div>
+
+      <div class="form-group" id="lbs-field" style="display:none;">
+        <label for="weight-lbs">Weight (lbs)</label>
+        <input type="number" id="weight-lbs" placeholder="e.g. 165" min="44" max="880" />
+      </div>
+
+      <div class="form-group">
+        <label for="activity">Exercise Level</label>
+        <select id="activity">
+          <option value="0">Sedentary — no exercise</option>
+          <option value="0.35">Light — 1–3 days/week (+0.35 L)</option>
+          <option value="0.59" selected>Moderate — 3–5 days/week (+0.59 L)</option>
+          <option value="0.95">Intense — hard daily training (+0.95 L)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="climate">Climate</label>
+        <select id="climate">
+          <option value="0">Temperate / cool climate</option>
+          <option value="0.5">Hot or humid climate (+0.5 L)</option>
+        </select>
+      </div>
+
+      <button class="calc-btn" onclick="calculate()">Calculate Water Intake</button>
+
+      <div class="result" id="result">
+        <h2>Your Daily Water Target</h2>
+        <div class="big-number" id="liters-out">—</div>
+        <div class="sub" id="oz-out">— fl oz / day</div>
+
+        <div class="result-grid" style="margin-top:1.2rem;">
+          <div class="result-item">
+            <div class="label">Base</div>
+            <div class="value" id="base-out">—</div>
+            <div class="label">liters</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Exercise</div>
+            <div class="value" id="exercise-out">—</div>
+            <div class="label">liters added</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Climate</div>
+            <div class="value" id="climate-out">—</div>
+            <div class="label">liters added</div>
+          </div>
+        </div>
+
+        <p class="sub" style="margin-top:1rem;">
+          💡 About <strong id="cups-out">—</strong> cups (8 fl oz each) per day.
+          Spread throughout the day — don't drink all at once.
+        </p>
+      </div>
+    </div>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+  </main>
+
+  <footer>
+    <p>Formula: weight_kg × 0.033 L base + activity + climate adjustments. For informational purposes only.</p>
+    <p style="margin-top:0.4rem;">© 2026 Fitness Calculators · <a href="index.html">Home</a></p>
+  </footer>
+
+  <script>
+    document.querySelectorAll('input[name="units"]').forEach(r => {
+      r.addEventListener('change', () => {
+        const isKg = r.value === 'kg';
+        document.getElementById('kg-field').style.display  = isKg ? '' : 'none';
+        document.getElementById('lbs-field').style.display = isKg ? 'none' : '';
+      });
+    });
+
+    function calculate() {
+      const units = document.querySelector('input[name="units"]:checked').value;
+      let kg;
+      if (units === 'kg') {
+        kg = parseFloat(document.getElementById('weight-kg').value);
+      } else {
+        kg = parseFloat(document.getElementById('weight-lbs').value) * 0.453592;
+      }
+
+      const exerciseAdj = parseFloat(document.getElementById('activity').value);
+      const climateAdj  = parseFloat(document.getElementById('climate').value);
+
+      if (!kg || kg <= 0) {
+        alert('Please enter a valid weight.');
+        return;
+      }
+
+      const base  = kg * 0.033;
+      const total = base + exerciseAdj + climateAdj;
+      const oz    = total * 33.814;
+      const cups  = total * 4.22675;
+
+      document.getElementById('liters-out').textContent  = total.toFixed(1) + ' L';
+      document.getElementById('oz-out').textContent      = oz.toFixed(0) + ' fl oz / day';
+      document.getElementById('base-out').textContent    = base.toFixed(2);
+      document.getElementById('exercise-out').textContent = '+' + exerciseAdj.toFixed(2);
+      document.getElementById('climate-out').textContent  = '+' + climateAdj.toFixed(2);
+      document.getElementById('cups-out').textContent    = Math.round(cups);
+      document.getElementById('result').classList.add('show');
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMI Calculator — Body Mass Index</title>
+  <meta name="description" content="Calculate your Body Mass Index (BMI) and see which category you fall into — underweight, normal, overweight, or obese." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .bmi-scale {
+      display: flex;
+      border-radius: 6px;
+      overflow: hidden;
+      height: 12px;
+      margin: 1rem 0 0.4rem;
+    }
+    .bmi-scale div { flex: 1; }
+    .bmi-scale .under   { background: #3498db; }
+    .bmi-scale .normal  { background: var(--primary); }
+    .bmi-scale .over    { background: #e67e22; }
+    .bmi-scale .obese   { background: #e74c3c; }
+    .bmi-labels {
+      display: flex;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      justify-content: space-between;
+    }
+    .category-badge {
+      display: inline-block;
+      padding: 0.3rem 0.9rem;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-top: 0.6rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>⚖️ BMI Calculator</h1>
+    <p>Calculate your Body Mass Index and healthy weight range</p>
+    <a class="home-link" href="index.html">← All Calculators</a>
+  </header>
+
+  <main>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+    <div class="card">
+      <div class="form-group">
+        <label>Unit System</label>
+        <div class="radio-group">
+          <label><input type="radio" name="units" value="metric" checked /> Metric (kg / cm)</label>
+          <label><input type="radio" name="units" value="imperial" /> Imperial (lbs / in)</label>
+        </div>
+      </div>
+
+      <div class="form-group" id="metric-fields">
+        <label for="weight-kg">Weight (kg)</label>
+        <input type="number" id="weight-kg" placeholder="e.g. 75" min="20" max="400" />
+        <label for="height-cm" style="margin-top:0.8rem;">Height (cm)</label>
+        <input type="number" id="height-cm" placeholder="e.g. 175" min="100" max="250" />
+      </div>
+
+      <div class="form-group" id="imperial-fields" style="display:none;">
+        <label for="weight-lbs">Weight (lbs)</label>
+        <input type="number" id="weight-lbs" placeholder="e.g. 165" min="44" max="880" />
+        <label for="height-in" style="margin-top:0.8rem;">Height (inches)</label>
+        <input type="number" id="height-in" placeholder="e.g. 69" min="40" max="100" />
+      </div>
+
+      <button class="calc-btn" onclick="calculate()">Calculate BMI</button>
+
+      <div class="result" id="result">
+        <h2>Your BMI</h2>
+        <div class="big-number" id="bmi-out">—</div>
+        <div id="category-badge" class="category-badge">—</div>
+
+        <div class="bmi-scale">
+          <div class="under"></div>
+          <div class="normal"></div>
+          <div class="over"></div>
+          <div class="obese"></div>
+        </div>
+        <div class="bmi-labels">
+          <span>Underweight<br>&lt;18.5</span>
+          <span style="text-align:center;">Normal<br>18.5–24.9</span>
+          <span style="text-align:center;">Overweight<br>25–29.9</span>
+          <span style="text-align:right;">Obese<br>30+</span>
+        </div>
+
+        <div class="result-grid" style="margin-top:1.2rem;">
+          <div class="result-item">
+            <div class="label">Healthy Weight Range</div>
+            <div class="value" id="healthy-range" style="font-size:1.1rem;">—</div>
+            <div class="label" id="healthy-unit">kg</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Your BMI</div>
+            <div class="value" id="bmi-repeat">—</div>
+            <div class="label">kg/m²</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+  </main>
+
+  <footer>
+    <p>BMI is a screening tool, not a diagnostic measure. For informational purposes only.</p>
+    <p style="margin-top:0.4rem;">© 2026 Fitness Calculators · <a href="index.html">Home</a></p>
+  </footer>
+
+  <script>
+    document.querySelectorAll('input[name="units"]').forEach(r => {
+      r.addEventListener('change', () => {
+        const imp = r.value === 'imperial';
+        document.getElementById('metric-fields').style.display = imp ? 'none' : '';
+        document.getElementById('imperial-fields').style.display = imp ? '' : 'none';
+      });
+    });
+
+    function calculate() {
+      const units = document.querySelector('input[name="units"]:checked').value;
+      let kg, cm;
+      if (units === 'metric') {
+        kg = parseFloat(document.getElementById('weight-kg').value);
+        cm = parseFloat(document.getElementById('height-cm').value);
+      } else {
+        kg = parseFloat(document.getElementById('weight-lbs').value) * 0.453592;
+        cm = parseFloat(document.getElementById('height-in').value) * 2.54;
+      }
+
+      if (!kg || !cm || kg <= 0 || cm <= 0) {
+        alert('Please enter valid weight and height.');
+        return;
+      }
+
+      const hM = cm / 100;
+      const bmi = kg / (hM * hM);
+
+      let category, color;
+      if (bmi < 18.5)      { category = 'Underweight'; color = '#3498db'; }
+      else if (bmi < 25)   { category = 'Normal Weight'; color = '#27ae60'; }
+      else if (bmi < 30)   { category = 'Overweight'; color = '#e67e22'; }
+      else                 { category = 'Obese'; color = '#e74c3c'; }
+
+      // Healthy weight range for this height
+      const minKg = 18.5 * hM * hM;
+      const maxKg = 24.9 * hM * hM;
+
+      let rangeText, unitLabel;
+      if (units === 'metric') {
+        rangeText = minKg.toFixed(1) + ' – ' + maxKg.toFixed(1);
+        unitLabel = 'kg';
+      } else {
+        rangeText = (minKg * 2.20462).toFixed(1) + ' – ' + (maxKg * 2.20462).toFixed(1);
+        unitLabel = 'lbs';
+      }
+
+      document.getElementById('bmi-out').textContent = bmi.toFixed(1);
+      document.getElementById('bmi-repeat').textContent = bmi.toFixed(1);
+
+      const badge = document.getElementById('category-badge');
+      badge.textContent = category;
+      badge.style.background = color + '22';
+      badge.style.color = color;
+
+      document.getElementById('healthy-range').textContent = rangeText;
+      document.getElementById('healthy-unit').textContent = unitLabel;
+      document.getElementById('result').classList.add('show');
+    }
+  </script>
+
+</body>
+</html>

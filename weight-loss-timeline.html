@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weight Loss Timeline Calculator — How Long to Reach Goal Weight</title>
+  <meta name="description" content="Find out how long it will take to reach your goal weight based on your daily calorie deficit." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .timeline-bar-wrap { margin-top: 1rem; }
+    .timeline-bar {
+      height: 18px;
+      border-radius: 9px;
+      background: #e0e6ed;
+      overflow: hidden;
+      position: relative;
+    }
+    .timeline-bar-fill {
+      height: 100%;
+      border-radius: 9px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.5s;
+      max-width: 100%;
+    }
+    .milestone-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>📅 Weight Loss Timeline</h1>
+    <p>See how long it will take to reach your goal weight</p>
+    <a class="home-link" href="index.html">← All Calculators</a>
+  </header>
+
+  <main>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+    <div class="card">
+      <div class="form-group">
+        <label>Unit System</label>
+        <div class="radio-group">
+          <label><input type="radio" name="units" value="lbs" checked /> Imperial (lbs)</label>
+          <label><input type="radio" name="units" value="kg" /> Metric (kg)</label>
+        </div>
+      </div>
+
+      <div class="form-group" id="lbs-fields">
+        <label for="current-lbs">Current Weight (lbs)</label>
+        <input type="number" id="current-lbs" placeholder="e.g. 200" min="44" max="880" />
+        <label for="goal-lbs" style="margin-top:0.8rem;">Goal Weight (lbs)</label>
+        <input type="number" id="goal-lbs" placeholder="e.g. 170" min="44" max="880" />
+      </div>
+
+      <div class="form-group" id="kg-fields" style="display:none;">
+        <label for="current-kg">Current Weight (kg)</label>
+        <input type="number" id="current-kg" placeholder="e.g. 90" min="20" max="400" />
+        <label for="goal-kg" style="margin-top:0.8rem;">Goal Weight (kg)</label>
+        <input type="number" id="goal-kg" placeholder="e.g. 75" min="20" max="400" />
+      </div>
+
+      <div class="form-group">
+        <label for="deficit">Daily Calorie Deficit</label>
+        <select id="deficit">
+          <option value="250">−250 cal/day (lose ~0.5 lb / 0.23 kg per week)</option>
+          <option value="500" selected>−500 cal/day (lose ~1 lb / 0.45 kg per week)</option>
+          <option value="750">−750 cal/day (lose ~1.5 lbs / 0.68 kg per week)</option>
+          <option value="1000">−1000 cal/day (lose ~2 lbs / 0.91 kg per week)</option>
+        </select>
+      </div>
+
+      <button class="calc-btn" onclick="calculate()">Calculate Timeline</button>
+
+      <div class="result" id="result">
+        <h2>Estimated Time to Goal</h2>
+        <div class="big-number" id="weeks-out">—</div>
+        <div class="sub" id="date-out">weeks (~— months)</div>
+
+        <div class="result-grid" style="margin-top:1.2rem;">
+          <div class="result-item">
+            <div class="label">Weight to Lose</div>
+            <div class="value" id="to-lose">—</div>
+            <div class="label" id="to-lose-unit">lbs</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Weekly Loss</div>
+            <div class="value" id="weekly-loss">—</div>
+            <div class="label" id="weekly-unit">lbs/week</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Target Date</div>
+            <div class="value" id="target-date" style="font-size:1rem;">—</div>
+            <div class="label">approx.</div>
+          </div>
+        </div>
+
+        <div class="timeline-bar-wrap">
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.4rem;">Progress toward goal</div>
+          <div class="timeline-bar">
+            <div class="timeline-bar-fill" id="progress-bar" style="width:0%"></div>
+          </div>
+          <div class="milestone-row">
+            <span>Start</span>
+            <span id="halfway-label">—</span>
+            <span>Goal</span>
+          </div>
+        </div>
+
+        <p class="sub" style="margin-top:1rem;">
+          🏁 At your current deficit, you'll reach your goal around <strong id="goal-month">—</strong>.
+        </p>
+      </div>
+    </div>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+  </main>
+
+  <footer>
+    <p>3,500 calories ≈ 1 lb of fat · 7,700 calories ≈ 1 kg of fat. Actual results vary. For informational purposes only.</p>
+    <p style="margin-top:0.4rem;">© 2026 Fitness Calculators · <a href="index.html">Home</a></p>
+  </footer>
+
+  <script>
+    document.querySelectorAll('input[name="units"]').forEach(r => {
+      r.addEventListener('change', () => {
+        const isLbs = r.value === 'lbs';
+        document.getElementById('lbs-fields').style.display = isLbs ? '' : 'none';
+        document.getElementById('kg-fields').style.display  = isLbs ? 'none' : '';
+      });
+    });
+
+    function calculate() {
+      const units = document.querySelector('input[name="units"]:checked').value;
+      const deficit = parseFloat(document.getElementById('deficit').value);
+      let current, goal, caloriesPerUnit;
+
+      if (units === 'lbs') {
+        current = parseFloat(document.getElementById('current-lbs').value);
+        goal    = parseFloat(document.getElementById('goal-lbs').value);
+        caloriesPerUnit = 3500;
+      } else {
+        current = parseFloat(document.getElementById('current-kg').value);
+        goal    = parseFloat(document.getElementById('goal-kg').value);
+        caloriesPerUnit = 7700;
+      }
+
+      if (!current || !goal || current <= 0 || goal <= 0) {
+        alert('Please enter valid current and goal weights.');
+        return;
+      }
+      if (goal >= current) {
+        alert('Goal weight must be less than current weight.');
+        return;
+      }
+
+      const toLose     = current - goal;
+      const weeklyLoss = (deficit * 7) / caloriesPerUnit;
+      const weeks      = toLose / weeklyLoss;
+      const months     = weeks / 4.345;
+
+      // Target date
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + Math.round(weeks * 7));
+      const dateStr = targetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+      // Halfway
+      const halfwayWeight = (current - toLose / 2).toFixed(1);
+
+      document.getElementById('weeks-out').textContent   = Math.round(weeks) + ' weeks';
+      document.getElementById('date-out').textContent    = '(~' + months.toFixed(1) + ' months)';
+      document.getElementById('to-lose').textContent     = toLose.toFixed(1);
+      document.getElementById('to-lose-unit').textContent = units;
+      document.getElementById('weekly-loss').textContent  = weeklyLoss.toFixed(2);
+      document.getElementById('weekly-unit').textContent  = units + '/week';
+      document.getElementById('target-date').textContent  = dateStr;
+      document.getElementById('goal-month').textContent   = dateStr;
+      document.getElementById('halfway-label').textContent = halfwayWeight + ' ' + units;
+      document.getElementById('progress-bar').style.width = '0%'; // starts at 0 — user is at start
+
+      document.getElementById('result').classList.add('show');
+    }
+  </script>
+
+</body>
+</html>

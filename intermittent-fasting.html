@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intermittent Fasting Calculator — Eating & Fasting Windows</title>
+  <meta name="description" content="Plan your intermittent fasting schedule. Enter your wake-up time and fasting method to get your eating window start and end times." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .timeline {
+      display: flex;
+      border-radius: 8px;
+      overflow: hidden;
+      height: 36px;
+      margin: 1.2rem 0 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .tl-fast {
+      background: #2c3e50;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tl-eat {
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .schedule-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.92rem;
+    }
+    .schedule-row:last-child { border-bottom: none; }
+    .schedule-icon { font-size: 1.3rem; width: 28px; text-align: center; flex-shrink: 0; }
+    .schedule-label { color: var(--text-muted); font-size: 0.8rem; }
+    .schedule-time { font-weight: 700; font-size: 1rem; }
+    .fasting-52-note {
+      background: #fef9e7;
+      border-left: 4px solid #f39c12;
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>⏱️ Intermittent Fasting Calculator</h1>
+    <p>Plan your fasting and eating windows based on your schedule</p>
+    <a class="home-link" href="index.html">← All Calculators</a>
+  </header>
+
+  <main>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+    <div class="card">
+      <div class="form-group">
+        <label for="method">Fasting Method</label>
+        <select id="method" onchange="onMethodChange()">
+          <option value="16:8">16:8 — Fast 16 hrs, eat 8 hrs (most popular)</option>
+          <option value="18:6">18:6 — Fast 18 hrs, eat 6 hrs</option>
+          <option value="20:4">20:4 — Fast 20 hrs, eat 4 hrs (OMAD-adjacent)</option>
+          <option value="5:2">5:2 — Normal 5 days, 500 cal on 2 days</option>
+        </select>
+      </div>
+
+      <div id="time-input">
+        <div class="form-group">
+          <label for="wake">Wake-up Time</label>
+          <input type="time" id="wake" value="07:00" />
+        </div>
+
+        <div class="form-group">
+          <label for="fast-start-pref">When do you prefer to start fasting?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="fast-start" value="wake" checked /> Right when I wake up</label>
+            <label><input type="radio" name="fast-start" value="custom" /> Custom time</label>
+          </div>
+        </div>
+
+        <div class="form-group" id="custom-start" style="display:none;">
+          <label for="fast-start-time">Fasting Start Time</label>
+          <input type="time" id="fast-start-time" value="20:00" />
+        </div>
+      </div>
+
+      <div id="fasting-52-input" style="display:none;">
+        <div class="fasting-52-note">
+          <strong>5:2 Method:</strong> Eat normally (your TDEE) for 5 days per week.
+          On 2 non-consecutive days, restrict to ~500 calories (women) or ~600 calories (men).
+          Pick your two fasting days below.
+        </div>
+        <div class="form-group" style="margin-top:1rem;">
+          <label>Select your 2 low-calorie days</label>
+          <div class="radio-group" style="flex-wrap:wrap;">
+            <label><input type="checkbox" name="fast-day" value="Monday" /> Mon</label>
+            <label><input type="checkbox" name="fast-day" value="Tuesday" /> Tue</label>
+            <label><input type="checkbox" name="fast-day" value="Wednesday" /> Wed</label>
+            <label><input type="checkbox" name="fast-day" value="Thursday" /> Thu</label>
+            <label><input type="checkbox" name="fast-day" value="Friday" /> Fri</label>
+            <label><input type="checkbox" name="fast-day" value="Saturday" /> Sat</label>
+            <label><input type="checkbox" name="fast-day" value="Sunday" /> Sun</label>
+          </div>
+        </div>
+      </div>
+
+      <button class="calc-btn" onclick="calculate()">Generate Schedule</button>
+
+      <div class="result" id="result">
+        <h2 id="result-title">Your Fasting Schedule</h2>
+
+        <div id="window-result">
+          <div class="timeline" id="timeline">
+            <div class="tl-fast" id="tl-fast-1" style="flex:16">⏸ Fasting</div>
+            <div class="tl-eat"  id="tl-eat"    style="flex:8">🍽 Eating</div>
+          </div>
+
+          <div id="schedule-rows"></div>
+        </div>
+
+        <div id="result-52" style="display:none;">
+          <div id="schedule-52"></div>
+        </div>
+
+        <p class="sub" style="margin-top:1rem;">
+          💡 During fasting: water, black coffee, and plain tea are allowed — they don't break a fast.
+        </p>
+      </div>
+    </div>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+  </main>
+
+  <footer>
+    <p>Schedule is a planning guide only. Consult a healthcare professional before starting any fasting protocol.</p>
+    <p style="margin-top:0.4rem;">© 2026 Fitness Calculators · <a href="index.html">Home</a></p>
+  </footer>
+
+  <script>
+    function onMethodChange() {
+      const is52 = document.getElementById('method').value === '5:2';
+      document.getElementById('time-input').style.display      = is52 ? 'none' : '';
+      document.getElementById('fasting-52-input').style.display = is52 ? '' : 'none';
+    }
+
+    document.querySelectorAll('input[name="fast-start"]').forEach(r => {
+      r.addEventListener('change', () => {
+        document.getElementById('custom-start').style.display = r.value === 'custom' ? '' : 'none';
+      });
+    });
+
+    function addMinutes(timeStr, mins) {
+      const [h, m] = timeStr.split(':').map(Number);
+      const total  = h * 60 + m + mins;
+      const hh     = Math.floor(total / 60) % 24;
+      const mm     = total % 60;
+      return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+    }
+
+    function to12h(timeStr) {
+      const [h, m] = timeStr.split(':').map(Number);
+      const ampm   = h >= 12 ? 'PM' : 'AM';
+      const h12    = h % 12 || 12;
+      return h12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
+    }
+
+    function calculate() {
+      const method = document.getElementById('method').value;
+
+      if (method === '5:2') {
+        const checked = [...document.querySelectorAll('input[name="fast-day"]:checked')];
+        if (checked.length !== 2) {
+          alert('Please select exactly 2 fasting days.');
+          return;
+        }
+
+        const days = checked.map(c => c.value);
+        document.getElementById('window-result').style.display = 'none';
+        document.getElementById('result-52').style.display     = '';
+        document.getElementById('schedule-52').innerHTML = `
+          <div class="schedule-row">
+            <div class="schedule-icon">📅</div>
+            <div>
+              <div class="schedule-label">Your low-calorie days</div>
+              <div class="schedule-time">${days.join(' & ')}</div>
+            </div>
+          </div>
+          <div class="schedule-row">
+            <div class="schedule-icon">🥗</div>
+            <div>
+              <div class="schedule-label">Normal eating days (5 days)</div>
+              <div class="schedule-time">Eat at your TDEE</div>
+            </div>
+          </div>
+          <div class="schedule-row">
+            <div class="schedule-icon">⚡</div>
+            <div>
+              <div class="schedule-label">Low-calorie days (${days.join(' & ')})</div>
+              <div class="schedule-time">~500 cal (women) · ~600 cal (men)</div>
+            </div>
+          </div>
+          <div class="schedule-row">
+            <div class="schedule-icon">💡</div>
+            <div>
+              <div class="schedule-label">Tip</div>
+              <div class="schedule-time" style="font-size:0.88rem;font-weight:400;">Keep fasting days non-consecutive for best results (e.g. Mon & Thu)</div>
+            </div>
+          </div>
+        `;
+        document.getElementById('result-title').textContent = '5:2 Fasting Plan';
+        document.getElementById('result').classList.add('show');
+        return;
+      }
+
+      // Time-window methods
+      const [fastHours, eatHours] = method.split(':').map(Number);
+      const wakeTime = document.getElementById('wake').value;
+
+      let fastStart;
+      const fastStartPref = document.querySelector('input[name="fast-start"]:checked').value;
+      if (fastStartPref === 'wake') {
+        fastStart = wakeTime;
+      } else {
+        fastStart = document.getElementById('fast-start-time').value;
+      }
+
+      const eatStart   = addMinutes(fastStart, fastHours * 60);
+      const eatEnd     = addMinutes(eatStart, eatHours * 60);
+      const fastEnd    = eatStart;
+
+      // Timeline visual ratio
+      document.getElementById('tl-fast-1').style.flex = fastHours;
+      document.getElementById('tl-eat').style.flex    = eatHours;
+      document.getElementById('tl-fast-1').textContent = `⏸ Fast ${fastHours}h`;
+      document.getElementById('tl-eat').textContent    = `🍽 Eat ${eatHours}h`;
+
+      document.getElementById('schedule-rows').innerHTML = `
+        <div class="schedule-row">
+          <div class="schedule-icon">⏰</div>
+          <div>
+            <div class="schedule-label">Wake up</div>
+            <div class="schedule-time">${to12h(wakeTime)}</div>
+          </div>
+        </div>
+        <div class="schedule-row">
+          <div class="schedule-icon">⏸</div>
+          <div>
+            <div class="schedule-label">Fasting starts</div>
+            <div class="schedule-time">${to12h(fastStart)}</div>
+          </div>
+        </div>
+        <div class="schedule-row">
+          <div class="schedule-icon">🍽</div>
+          <div>
+            <div class="schedule-label">Eating window opens (fast ends)</div>
+            <div class="schedule-time">${to12h(eatStart)}</div>
+          </div>
+        </div>
+        <div class="schedule-row">
+          <div class="schedule-icon">🛑</div>
+          <div>
+            <div class="schedule-label">Eating window closes</div>
+            <div class="schedule-time">${to12h(eatEnd)}</div>
+          </div>
+        </div>
+        <div class="schedule-row">
+          <div class="schedule-icon">⏸</div>
+          <div>
+            <div class="schedule-label">Fasting resumes until ${to12h(fastEnd)} next day</div>
+            <div class="schedule-time">${fastHours}h fast · ${eatHours}h eating window</div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('window-result').style.display = '';
+      document.getElementById('result-52').style.display     = 'none';
+      document.getElementById('result-title').textContent    = method + ' Fasting Schedule';
+      document.getElementById('result').classList.add('show');
+    }
+  </script>
+
+</body>
+</html>

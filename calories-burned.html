@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calories Burned Calculator — Exercise Calorie Counter</title>
+  <meta name="description" content="Estimate how many calories you burn during exercise based on activity type, body weight, and duration." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>🏃 Calories Burned Calculator</h1>
+    <p>Estimate calories burned during different types of exercise</p>
+    <a class="home-link" href="index.html">← All Calculators</a>
+  </header>
+
+  <main>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+    <div class="card">
+      <div class="form-group">
+        <label>Unit System</label>
+        <div class="radio-group">
+          <label><input type="radio" name="units" value="kg" checked /> Metric (kg)</label>
+          <label><input type="radio" name="units" value="lbs" /> Imperial (lbs)</label>
+        </div>
+      </div>
+
+      <div class="form-group" id="kg-field">
+        <label for="weight-kg">Body Weight (kg)</label>
+        <input type="number" id="weight-kg" placeholder="e.g. 75" min="20" max="400" />
+      </div>
+
+      <div class="form-group" id="lbs-field" style="display:none;">
+        <label for="weight-lbs">Body Weight (lbs)</label>
+        <input type="number" id="weight-lbs" placeholder="e.g. 165" min="44" max="880" />
+      </div>
+
+      <div class="form-group">
+        <label for="activity">Activity</label>
+        <select id="activity">
+          <option value="11.0">Jump Rope (MET 11.0)</option>
+          <option value="9.8" selected>Running — 6 mph (MET 9.8)</option>
+          <option value="8.0">HIIT (MET 8.0)</option>
+          <option value="7.5">Cycling — moderate (MET 7.5)</option>
+          <option value="6.0">Swimming (MET 6.0)</option>
+          <option value="3.5">Walking — 3 mph (MET 3.5)</option>
+          <option value="3.5">Weight Lifting (MET 3.5)</option>
+          <option value="2.5">Yoga (MET 2.5)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="duration">Duration (minutes)</label>
+        <input type="number" id="duration" placeholder="e.g. 45" min="1" max="600" />
+      </div>
+
+      <button class="calc-btn" onclick="calculate()">Calculate Calories Burned</button>
+
+      <div class="result" id="result">
+        <h2>Estimated Calories Burned</h2>
+        <div class="big-number" id="calories-out">—</div>
+        <div class="sub" id="rate-out">calories per hour</div>
+
+        <div class="result-grid" style="margin-top:1.2rem;">
+          <div class="result-item">
+            <div class="label">Per Minute</div>
+            <div class="value" id="per-min">—</div>
+            <div class="label">cal/min</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Per Hour</div>
+            <div class="value" id="per-hour">—</div>
+            <div class="label">cal/hr</div>
+          </div>
+          <div class="result-item">
+            <div class="label">MET Value</div>
+            <div class="value" id="met-out">—</div>
+            <div class="label">metabolic eq.</div>
+          </div>
+        </div>
+
+        <p class="sub" style="margin-top:1rem;">
+          Formula: MET × weight (kg) × duration (hours). Estimates vary by individual fitness level.
+        </p>
+      </div>
+    </div>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+  </main>
+
+  <footer>
+    <p>Based on MET (Metabolic Equivalent of Task) values. For informational purposes only.</p>
+    <p style="margin-top:0.4rem;">© 2026 Fitness Calculators · <a href="index.html">Home</a></p>
+  </footer>
+
+  <script>
+    document.querySelectorAll('input[name="units"]').forEach(r => {
+      r.addEventListener('change', () => {
+        const isKg = r.value === 'kg';
+        document.getElementById('kg-field').style.display  = isKg ? '' : 'none';
+        document.getElementById('lbs-field').style.display = isKg ? 'none' : '';
+      });
+    });
+
+    function calculate() {
+      const units = document.querySelector('input[name="units"]:checked').value;
+      let kg;
+      if (units === 'kg') {
+        kg = parseFloat(document.getElementById('weight-kg').value);
+      } else {
+        kg = parseFloat(document.getElementById('weight-lbs').value) * 0.453592;
+      }
+
+      const met      = parseFloat(document.getElementById('activity').value);
+      const minutes  = parseFloat(document.getElementById('duration').value);
+
+      if (!kg || !minutes || kg <= 0 || minutes <= 0) {
+        alert('Please enter valid weight and duration.');
+        return;
+      }
+
+      const hours    = minutes / 60;
+      const total    = met * kg * hours;
+      const perMin   = total / minutes;
+      const perHour  = met * kg;
+
+      document.getElementById('calories-out').textContent = Math.round(total).toLocaleString() + ' cal';
+      document.getElementById('rate-out').textContent     = Math.round(perHour).toLocaleString() + ' cal/hr at this activity';
+      document.getElementById('per-min').textContent      = perMin.toFixed(1);
+      document.getElementById('per-hour').textContent     = Math.round(perHour).toLocaleString();
+      document.getElementById('met-out').textContent      = met.toFixed(1);
+      document.getElementById('result').classList.add('show');
+    }
+  </script>
+
+</body>
+</html>

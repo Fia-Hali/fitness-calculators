@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Macro Split Calculator — Protein, Carbs & Fat Targets</title>
+  <meta name="description" content="Calculate your daily protein, carbohydrate, and fat targets based on your calorie goal and preferred diet type." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .macro-bar-wrap { margin-top: 1rem; }
+    .macro-bar { height: 14px; border-radius: 7px; background: #e0e6ed; overflow: hidden; margin-bottom: 0.3rem; }
+    .macro-bar-fill { height: 100%; border-radius: 7px; transition: width 0.4s; }
+    .bar-protein { background: var(--primary); }
+    .bar-carbs   { background: #3498db; }
+    .bar-fat     { background: #e67e22; }
+    .macro-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.82rem; color: var(--text-muted); }
+    .macro-legend span { display: flex; align-items: center; gap: 0.3rem; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🥗 Macro Split Calculator</h1>
+    <p>Break your calorie target into protein, carbs, and fat</p>
+    <a class="home-link" href="index.html">← All Calculators</a>
+  </header>
+
+  <main>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+    <div class="card">
+      <div class="form-group">
+        <label for="calories">Daily Calorie Target</label>
+        <input type="number" id="calories" placeholder="e.g. 2000" min="800" max="6000" />
+        <p style="font-size:0.82rem;color:var(--text-muted);margin-top:0.4rem;">
+          Don't know your calories? Use the <a href="tdee.html" style="color:var(--primary-dark);">TDEE Calculator</a>.
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label for="diet">Diet Type</label>
+        <select id="diet">
+          <option value="balanced">Balanced (30% protein / 40% carbs / 30% fat)</option>
+          <option value="highprotein">High Protein (40% protein / 30% carbs / 30% fat)</option>
+          <option value="keto">Keto (25% protein / 5% carbs / 70% fat)</option>
+        </select>
+      </div>
+
+      <button class="calc-btn" onclick="calculate()">Calculate Macros</button>
+
+      <div class="result" id="result">
+        <h2>Your Daily Macro Targets</h2>
+
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="label">Protein</div>
+            <div class="value" id="protein-out" style="color:var(--primary-dark);">—</div>
+            <div class="label">grams/day</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Carbs</div>
+            <div class="value" id="carbs-out" style="color:#2980b9;">—</div>
+            <div class="label">grams/day</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Fat</div>
+            <div class="value" id="fat-out" style="color:#d35400;">—</div>
+            <div class="label">grams/day</div>
+          </div>
+        </div>
+
+        <div class="macro-bar-wrap">
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;" id="split-label">—</div>
+          <div class="macro-bar"><div class="macro-bar-fill bar-protein" id="bar-protein" style="width:0%"></div></div>
+          <div class="macro-bar"><div class="macro-bar-fill bar-carbs" id="bar-carbs" style="width:0%"></div></div>
+          <div class="macro-bar"><div class="macro-bar-fill bar-fat" id="bar-fat" style="width:0%"></div></div>
+          <div class="macro-legend">
+            <span><span class="dot" style="background:var(--primary);"></span> Protein</span>
+            <span><span class="dot" style="background:#3498db;"></span> Carbs</span>
+            <span><span class="dot" style="background:#e67e22;"></span> Fat</span>
+          </div>
+        </div>
+
+        <p class="sub" style="margin-top:1rem;">Each meal: roughly <strong id="per-meal-protein">—</strong>g protein · <strong id="per-meal-carbs">—</strong>g carbs · <strong id="per-meal-fat">—</strong>g fat (÷3 meals)</p>
+      </div>
+    </div>
+
+    <div class="ad-slot">Advertisement — AdSense slot goes here</div>
+
+  </main>
+
+  <footer>
+    <p>Gram values: calories ÷ 4 for protein/carbs, ÷ 9 for fat. For informational purposes only.</p>
+    <p style="margin-top:0.4rem;">© 2026 Fitness Calculators · <a href="index.html">Home</a></p>
+  </footer>
+
+  <script>
+    const splits = {
+      balanced:   { protein: 0.30, carbs: 0.40, fat: 0.30, label: 'Balanced: 30% protein · 40% carbs · 30% fat' },
+      highprotein:{ protein: 0.40, carbs: 0.30, fat: 0.30, label: 'High Protein: 40% protein · 30% carbs · 30% fat' },
+      keto:       { protein: 0.25, carbs: 0.05, fat: 0.70, label: 'Keto: 25% protein · 5% carbs · 70% fat' }
+    };
+
+    function calculate() {
+      const calories = parseFloat(document.getElementById('calories').value);
+      const diet = document.getElementById('diet').value;
+
+      if (!calories || calories < 800) {
+        alert('Please enter a valid calorie target (800+).');
+        return;
+      }
+
+      const s = splits[diet];
+      const proteinG = Math.round((calories * s.protein) / 4);
+      const carbsG   = Math.round((calories * s.carbs)   / 4);
+      const fatG     = Math.round((calories * s.fat)      / 9);
+
+      document.getElementById('protein-out').textContent = proteinG;
+      document.getElementById('carbs-out').textContent   = carbsG;
+      document.getElementById('fat-out').textContent     = fatG;
+      document.getElementById('split-label').textContent = s.label;
+
+      document.getElementById('bar-protein').style.width = (s.protein * 100) + '%';
+      document.getElementById('bar-carbs').style.width   = (s.carbs   * 100) + '%';
+      document.getElementById('bar-fat').style.width     = (s.fat      * 100) + '%';
+
+      document.getElementById('per-meal-protein').textContent = Math.round(proteinG / 3);
+      document.getElementById('per-meal-carbs').textContent   = Math.round(carbsG   / 3);
+      document.getElementById('per-meal-fat').textContent     = Math.round(fatG     / 3);
+
+      document.getElementById('result').classList.add('show');
+    }
+  </script>
+
+</body>
+</html>
