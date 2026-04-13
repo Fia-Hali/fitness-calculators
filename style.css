@@ -279,6 +279,28 @@ footer a:hover {
   text-decoration: underline;
 }
 
+/* ===== FEATURED LINKS (pill buttons) ===== */
+.featured-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.featured-links a {
+  display: inline-block;
+  padding: 0.45rem 0.9rem;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.featured-links a:hover { background: var(--primary-dark); }
+
 /* ===== SEO CONTENT SECTION ===== */
 .seo-section {
   background: var(--surface);
